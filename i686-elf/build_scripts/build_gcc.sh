@@ -2,8 +2,6 @@
 
 GCC_VERSION=$1
 
-cd $PREFIX/src/gcc-${GCC_VERSION}/gcc
-
 cd $PREFIX/src
 mkdir build-gcc
 cd build-gcc
