@@ -1,0 +1,36 @@
+FROM debian:stretch-slim
+
+RUN set -x \
+	&& apt-get update \
+	&& apt-get install -y wget gcc libgmp3-dev libmpfr-dev libisl-dev \
+		libcloog-isl-dev libmpc-dev texinfo bison flex make bzip2 patch \
+		build-essential
+
+ARG BINUTILS_VERSION=2.34
+ARG GCC_VERSION=10.2.0
+
+ENV HOME=/opt/cross
+ENV TARGET=x86_64-elf
+ENV PATH=/opt/cross/bin:${PATH}
+
+RUN set -x \
+	&& mkdir -p ${HOME}/src \
+	&& cd ${HOME}/src \
+	&& wget -q ftp://ftp.gnu.org/gnu/binutils/binutils-${BINUTILS_VERSION}.tar.gz \
+	&& wget -q ftp://ftp.gnu.org/gnu/gcc/gcc-${GCC_VERSION}/gcc-${GCC_VERSION}.tar.gz \
+	&& tar zxf binutils-${BINUTILS_VERSION}.tar.gz \
+	&& tar zxf gcc-${GCC_VERSION}.tar.gz \
+	&& rm binutils-${BINUTILS_VERSION}.tar.gz gcc-${GCC_VERSION}.tar.gz \
+	&& chown -R root:root binutils-${BINUTILS_VERSION} \
+	&& chown -R root:root gcc-${GCC_VERSION} \
+	&& chmod -R o-w,g+w binutils-${BINUTILS_VERSION} \
+	&& chmod -R o-w,g+w gcc-${GCC_VERSION}
+
+COPY build_scripts/ ${HOME}/src/
+
+RUN set -x \
+	&& cd ${HOME}/src \
+    && chmod +x build_binutils.sh \
+    && chmod +x build_gcc.sh \
+	&& ./build_binutils.sh ${BINUTILS_VERSION} \
+	&& ./build_gcc.sh ${GCC_VERSION}
